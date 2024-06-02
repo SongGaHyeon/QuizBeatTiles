@@ -1,6 +1,4 @@
-
 import pygame
-import sys
 
 pygame.init() #초기화
 
@@ -14,12 +12,14 @@ pygame.display.set_caption("Tile Game")
 
 clock = pygame.time.Clock()
 
-background1 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/worldmap1.jpg")
-background1 = pygame.transform.scale(background1,(200,200))
-background2 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/worldmap2.jpg")
-background2 = pygame.transform.scale(background2,(200,200))
-background3 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/worldmap3.jpg")
-background3 = pygame.transform.scale(background3,(200,200))
+image = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/worldmap11.jpg")
+image = pygame.transform.scale(image, (480,600))
+background1 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/1.jpg")
+background1 = pygame.transform.scale(background1,(50,50))
+background2 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/2.jpg")
+background2 = pygame.transform.scale(background2,(50,50))
+background3 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/3.jpg")
+background3 = pygame.transform.scale(background3,(50,50))
 
 background1_rect = background1.get_rect()
 background2_rect = background2.get_rect()
@@ -27,11 +27,11 @@ background3_rect = background3.get_rect()
 
 def set_image_position(image_rect, position):
     if position =="bottom_left":
-        image_rect.bottomleft = (0, screen_height)
+        image_rect.bottomleft = (50, 300)
     elif position == "center":
-        image_rect.center = (screen_width // 2, screen_height // 2)
+        image_rect.center = (330, 500)
     elif position == "top_right":
-        image_rect.topright = (screen_width, 0)
+        image_rect.topright = (330, 100)
     else:
         raise ValueError("Unknown position: choose from 'bottom_left', 'center', 'top_right'")
 
@@ -42,8 +42,8 @@ character = pygame.transform.scale(character,(50, 50))
 character_size = character.get_rect().size #이미지의 크기를 구함
 character_width = character_size[0] #캐릭터의 가로 크기
 character_height = character_size[1] #세로
-character_x_pos = (screen_width / 2) -(character_width / 2) #화면 가로의 절반크기에 해당하는 곳 위치
-character_y_pos = screen_height - character_height # 세로
+character_x_pos =0 #(screen_width / 2) -(character_width / 2) #화면 가로의 절반크기에 해당하는 곳 위치
+character_y_pos =300 #screen_height - character_height # 세로
 
 #이동 할 좌표
 to_x = 0
@@ -61,7 +61,7 @@ while running:
     for event in pygame.event.get(): #어떤 이벤트가 발생?
         if event.type == pygame.QUIT: #창이 닫히는 이벤트가 발생?
             running = False
-            sys.exit()
+
         if event.type == pygame.KEYDOWN: #키가 눌러졋는지 확인
             if event.key == pygame.K_LEFT: #왼쪽으로가기
                 to_x -= character_speed
@@ -93,7 +93,7 @@ while running:
         character_y_pos = screen_height - character_height
 
 
-    screen.fill((0,0,0))
+    screen.blit(image,(0,0))
 
     set_image_position(background1_rect, "bottom_left")
     screen.blit(background1, background1_rect)
@@ -115,3 +115,4 @@ while running:
     pygame.display.update()
 #겜종료
 pygame.quit()
+
