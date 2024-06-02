@@ -1,118 +1,207 @@
+import os
+import warnings
 import pygame
+import subprocess
+import sys
 
-pygame.init() #초기화
+# 환경 변수 설정
+os.environ['PYTHONWARNINGS'] = "ignore"
 
-#화면 크기 설정
-screen_width = 480
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+# 로깅 레벨 설정
+import logging
+logging.basicConfig(level=logging.CRITICAL)
 
-#화면 제목
-pygame.display.set_caption("Tile Game")
+# Builder 클래스 정의
+class GameBuilder:
+    def __init__(self):
+        self._game = GameFacade()
 
-clock = pygame.time.Clock()
+    def set_screen(self, width, height):
+        self._game.screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Tile Game")
+        return self
 
-image = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/worldmap11.jpg")
-image = pygame.transform.scale(image, (480,600))
-background1 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/1.jpg")
-background1 = pygame.transform.scale(background1,(50,50))
-background2 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/2.jpg")
-background2 = pygame.transform.scale(background2,(50,50))
-background3 = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/3.jpg")
-background3 = pygame.transform.scale(background3,(50,50))
+    def set_clock(self):
+        self._game.clock = pygame.time.Clock()
+        return self
 
-background1_rect = background1.get_rect()
-background2_rect = background2.get_rect()
-background3_rect = background3.get_rect()
+    def set_images(self, map_image_path, character_image_path):
+        self._game.image = self._game._load_image(map_image_path, (640, 640))
+        self._game.character = self._game._load_image(character_image_path, (100, 100))
+        return self
 
-def set_image_position(image_rect, position):
-    if position =="bottom_left":
-        image_rect.bottomleft = (50, 300)
-    elif position == "center":
-        image_rect.center = (330, 500)
-    elif position == "top_right":
-        image_rect.topright = (330, 100)
-    else:
-        raise ValueError("Unknown position: choose from 'bottom_left', 'center', 'top_right'")
+    def set_initial_position(self, x, y):
+        self._game.character_x_pos = x
+        self._game.character_y_pos = y
+        return self
 
+    def set_speed(self, speed):
+        self._game.character_speed = speed
+        return self
 
-# 캐릭터 불러오기
-character = pygame.image.load("C:/Users/ChoiSeunghwan/Desktop/pygame/캐릭터.png")
-character = pygame.transform.scale(character,(50, 50))
-character_size = character.get_rect().size #이미지의 크기를 구함
-character_width = character_size[0] #캐릭터의 가로 크기
-character_height = character_size[1] #세로
-character_x_pos =0 #(screen_width / 2) -(character_width / 2) #화면 가로의 절반크기에 해당하는 곳 위치
-character_y_pos =300 #screen_height - character_height # 세로
+    def reset_success_status(self):
+        self._game.reset_success_status()
+        return self
 
-#이동 할 좌표
-to_x = 0
-to_y = 0
+    def build(self):
+        self._game.running = True
+        return self._game
 
-#이동속도
-character_speed = 0.6
+# Facade 클래스 정의
+class GameFacade:
+    def __init__(self):
+        self._initialize_pygame()
+        self.screen = None
+        self.clock = None
+        self.image = None
+        self.character = None
+        self.character_x_pos = 0
+        self.character_y_pos = 300
+        self.to_x = 0
+        self.to_y = 0
+        self.character_speed = 0.6
+        self.reset_success_status()
+        self.running = True
 
+    def _initialize_pygame(self):
+        pygame.init()
 
+    def _load_image(self, path, size):
+        image = pygame.image.load(path)
+        return pygame.transform.scale(image, size)
 
-#이벤트 루푸 
-running = True #겜 진행중?
-while running:
-    dt = clock.tick(30) # 게임화면 초당 프레임 수 설정... 숫자가 커질수록 빨리 낮을수록 느리게
-    for event in pygame.event.get(): #어떤 이벤트가 발생?
-        if event.type == pygame.QUIT: #창이 닫히는 이벤트가 발생?
-            running = False
+    def reset_success_status(self):
+        for i in range(1, 4):
+            with open(f'success_status_{i}.txt', 'w') as file:
+                file.write('')
 
-        if event.type == pygame.KEYDOWN: #키가 눌러졋는지 확인
-            if event.key == pygame.K_LEFT: #왼쪽으로가기
-                to_x -= character_speed
-            elif event.key == pygame.K_RIGHT: #오른쪽으로 가기
-                to_x += character_speed
-            elif event.key == pygame.K_UP: #위로 가기
-                to_y -= character_speed
-            elif event.key == pygame.K_DOWN: #아래로 가기
-                to_y += character_speed
+    def check_success(self, map_number):
+        try:
+            with open(f'success_status_{map_number}.txt', 'r') as file:
+                status = file.read().strip()
+                return status == 'success'
+        except FileNotFoundError:
+            return False
 
-        if event.type == pygame.KEYUP: #방향키 때면 멈춤
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                to_x = 0
-            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                to_y = 0
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            self.running = False
+        elif event.type == pygame.KEYDOWN:
+            self._handle_keydown(event.key)
+        elif event.type == pygame.KEYUP:
+            self._handle_keyup(event.key)
 
-    character_x_pos += to_x * dt
-    character_y_pos += to_y * dt
+    def _handle_keydown(self, key):
+        if key == pygame.K_LEFT:
+            self.to_x -= self.character_speed
+        elif key == pygame.K_RIGHT:
+            self.to_x += self.character_speed
+        elif key == pygame.K_UP:
+            self.to_y -= self.character_speed
+        elif key == pygame.K_DOWN:
+            self.to_y += self.character_speed
+        elif key == pygame.K_RETURN:
+            self._handle_return_key()
 
-    #캐릭터 가로로 못나가게
-    if character_x_pos < 0:
-        character_x_pos = 0
-    elif character_x_pos > screen_width - character_width: 
-        character_x_pos = screen_width -character_width
-   #세로로 못나가게
-    if character_y_pos < 0:
-        character_y_pos = 0
-    elif character_y_pos > screen_height - character_height:
-        character_y_pos = screen_height - character_height
+    def _handle_keyup(self, key):
+        if key in [pygame.K_LEFT, pygame.K_RIGHT]:
+            self.to_x = 0
+        elif key in [pygame.K_UP, pygame.K_DOWN]:
+            self.to_y = 0
 
+    def _handle_return_key(self):
+        if 200 <= self.character_x_pos <= 436 and 82 <= self.character_y_pos <= 308:
+            self._run_map_script('map1.py')
+        elif 10 <= self.character_x_pos <= 266 and 316 <= self.character_y_pos <= 606:
+            if self.check_success(1):
+                self._run_map_script('map2.py')
+            else:
+                print("Complete map1 first!")
+        elif 344 <= self.character_x_pos <= 634 and 324 <= self.character_y_pos <= 628:
+            if self.check_success(1) and self.check_success(2):
+                self._run_map_script('map3.py')
+            else:
+                print("Complete map2 first!")
 
-    screen.blit(image,(0,0))
+    def _run_map_script(self, script_name):
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NEW_CONSOLE
+        else:
+            creationflags = 0
+        subprocess.Popen(['python', script_name], creationflags=creationflags)
 
-    set_image_position(background1_rect, "bottom_left")
-    screen.blit(background1, background1_rect)
+    def update_character_position(self, dt):
+        self.character_x_pos += self.to_x * dt
+        self.character_y_pos += self.to_y * dt
+        self.character_x_pos = max(0, min(self.character_x_pos, 640 - self.character.get_rect().width))
+        self.character_y_pos = max(0, min(self.character_y_pos, 640 - self.character.get_rect().height))
 
-    set_image_position(background2_rect, "center")
-    screen.blit(background2, background2_rect)
+    def draw(self):
+        self.screen.blit(self.image, (0, 0))
+        self.screen.blit(self.character, (self.character_x_pos, self.character_y_pos))
+        pygame.display.update()
 
-    set_image_position(background3_rect, "top_right")
-    screen.blit(background3, background3_rect)
+    def run(self):
+        while self.running:
+            dt = self.clock.tick(30)
+            for event in pygame.event.get():
+                self.handle_event(event)
+            self.update_character_position(dt)
+            self.draw()
+        pygame.quit()
+        sys.exit()
 
+# Chain 패턴을 위한 이벤트 핸들러 정의
+class EventHandler:
+    def __init__(self, next_handler=None):
+        self._next_handler = next_handler
 
+    def handle(self, event, game):
+        if self._next_handler:
+            self._next_handler.handle(event, game)
 
+class QuitEventHandler(EventHandler):
+    def handle(self, event, game):
+        if event.type == pygame.QUIT:
+            game.running = False
+        else:
+            super().handle(event, game)
 
+class KeyDownEventHandler(EventHandler):
+    def handle(self, event, game):
+        if event.type == pygame.KEYDOWN:
+            game._handle_keydown(event.key)
+        else:
+            super().handle(event, game)
 
+class KeyUpEventHandler(EventHandler):
+    def handle(self, event, game):
+        if event.type == pygame.KEYUP:
+            game._handle_keyup(event.key)
+        else:
+            super().handle(event, game)
 
-    screen.blit(character,(character_x_pos, character_y_pos)) #캐릭터 그리기
+if __name__ == "__main__":
+    builder = (GameBuilder()
+               .set_screen(640, 640)
+               .set_clock()
+               .set_images("image/mapworld.png", "image/berry.png")
+               .set_initial_position(0, 300)
+               .set_speed(0.6)
+               .reset_success_status())
+    
+    game = builder.build()
 
-
-    pygame.display.update()
-#겜종료
-pygame.quit()
-
+    quit_handler = QuitEventHandler()
+    keydown_handler = KeyDownEventHandler(quit_handler)
+    keyup_handler = KeyUpEventHandler(keydown_handler)
+    
+    while game.running:
+        dt = game.clock.tick(30)
+        for event in pygame.event.get():
+            keyup_handler.handle(event, game)
+        game.update_character_position(dt)
+        game.draw()
+    
+    pygame.quit()
+    sys.exit()
