@@ -49,6 +49,11 @@ class GameFacade:
         self.bomb = self.create_object("bomb")
         self.cake = self.create_object("cake")
 
+        # Background Music
+        self.background_music_path = "image/quizmusic.mp3"
+        pygame.mixer.music.load(self.background_music_path)
+        pygame.mixer.music.play(-1)  # Play the music in a loop
+
     def _load_image(self, path):
         return pygame.image.load(path)
 

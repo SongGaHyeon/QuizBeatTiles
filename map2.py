@@ -87,6 +87,11 @@ class GameFacade:
         self.font_path = "image/AppleSDGothicNeo.ttc"
         self.game_font = pygame.font.Font(self.font_path, 40)
 
+        # Background Music
+        self.background_music_path = "image/quizmusic.mp3"
+        pygame.mixer.music.load(self.background_music_path)
+        pygame.mixer.music.play(-1)  # Play the music in a loop
+
     def _initialize_pygame(self):
         pygame.init()
 

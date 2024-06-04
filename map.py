@@ -63,8 +63,14 @@ class GameFacade:
         self.reset_success_status()
         self.running = True
 
+        # Background Music
+        self.background_music_path = "image/background.mp3"
+        pygame.mixer.music.load(self.background_music_path)
+        pygame.mixer.music.play(-1)  # Play the music in a loop
+
     def _initialize_pygame(self):
         pygame.init()
+        pygame.mixer.init()  # Initialize the mixer module
 
     def _load_image(self, path, size):
         image = pygame.image.load(path)
@@ -124,11 +130,10 @@ class GameFacade:
                 print("Complete map2 first!")
 
     def _run_map_script(self, script_name):
-        if sys.platform == "win32":
-            creationflags = subprocess.CREATE_NEW_CONSOLE
-        else:
-            creationflags = 0
-        subprocess.Popen(['python', script_name], creationflags=creationflags)
+        pygame.mixer.music.pause()  # Pause the background music
+        process = subprocess.Popen(['python', script_name])
+        process.wait()  # Wait for the map script to complete
+        pygame.mixer.music.unpause()  # Resume the background music
 
     def update_character_position(self, dt):
         self.character_x_pos += self.to_x * dt
