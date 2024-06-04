@@ -68,16 +68,16 @@ class GameFacade:
         self.quiz_question = ""
         self.quiz_answer = ""
         self.quizzes = [
-            ("SOLID pattern을 잘 지켜야한다", "O"),
-            ("o", "O"),
-            ("x", "X"),
-            ("o", "O"),
-            ("x", "X"),
-            ("o", "O"),
-            ("o", "O"),
-            ("o", "O"),
-            ("o", "O"),
-            ("x", "X")
+            ("Composite Class는 Component를 상속받는다", "O"),
+            ("요구자와 처리자의 관계가 고정적이고 처리 속도가 상당히 중요하면 CoR패턴을 굳이 사용할 이유가 없다", "O"),
+            ("동일한 것을 공유해서 낭비 없애는 것은 Flyweight Pattern이다", "O"),
+            ("기능의 클래스 계층과 구현의 클래스 계층을 분리하는 것은 Brick Pattern이다", "X"),
+            ("상속은 클래스를 확장하기 위한 편한 방법이다", "O"),
+            ("상속은 클래스간 연결을 강하게 고정시킨다", "O"),
+            ("이미 제공되어 있는 것, 필요한 것 사이의 차이를 없애주는 패턴은 Adaptor 패턴이다", "O"),
+            ("Adapter Pattern은 Wrapper 패턴으로 불리기도 한다", "O"),
+            ("클래스에 의한 Adapter 패턴은 상속하는 방법이다", "O"),
+            ("인스턴스에 의한 Adapter Pattern은 위임하는 방법이다", "O")
         ]
         self.quiz_index = 0
         self.quiz_answered = []

@@ -69,15 +69,15 @@ class GameFacade:
         self.quiz_answer = ""
         self.quizzes = [
             ("SOLID pattern을 잘 지켜야한다", "O"),
-            ("o", "O"),
-            ("x", "X"),
-            ("o", "O"),
-            ("x", "X"),
-            ("o", "O"),
-            ("o", "O"),
-            ("o", "O"),
-            ("o", "O"),
-            ("x", "X")
+            ("객체에 장식의 기능을 추가하려고 할때 데코레이터 패턴을 적용한다", "O"),
+            ("Factory 자체에 여러 기능을 추가하고 싶을 때 Factor Method Pattern 을 사용한다", "X"),
+            ("추상 팩토리 패턴은 팩토리 자체를 객체화 구체화 시키는 것이다", "X"),
+            ("Abstract Factory Pattern을 사용하면 복잡성이 감소된다", "X"),
+            ("Runtime 중에 알고리즘을 선택하게 하는 것은 Strategy Pattern 이다", "O"),
+            ("Strategy 패턴은 어떠한 알고리즘을 사용할지 Runtime Instruction을 받는다", "O"),
+            ("위임은 느슨한 연결을 사용한다", "O"),
+            ("Composite 패턴에서 Base Interface를 Component라고 한다", "O"),
+            ("Component를 상속받은 leaf와 composite은 Component와 같은 함수를 가지고 있어야함", "O")
         ]
         self.quiz_index = 0
         self.quiz_answered = []
